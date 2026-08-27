@@ -135,9 +135,13 @@ def _is_attribute_satisfied(key: str, value: Any, attributes: dict[str, Any]) ->
         # Compare in mired space: most integrations quantize color temperature
         # to whole mireds, and the kelvin error of that quantization grows
         # quadratically with kelvin (~21 K at 6500 K, ~50 K at 10000 K), so no
-        # fixed kelvin tolerance fits the whole range. Equal mireds means the
-        # device cannot get any closer to the target than it already is.
-        return round(1_000_000 / value) == round(1_000_000 / current)
+        # fixed kelvin tolerance fits the whole range. The tolerance of one
+        # mired absorbs the difference between conversion schemes: HA core's
+        # helpers floor (e.g. 5500 K -> 181 mired -> 5524 K) while some
+        # integrations round (5500 K -> 182 mired -> 5495 K), and no exact
+        # equality converges for both. One mired is far below the ~5.5 mired
+        # just-noticeable difference for color temperature.
+        return abs(round(1_000_000 / value) - round(1_000_000 / current)) <= 1
     return value == current
 
 

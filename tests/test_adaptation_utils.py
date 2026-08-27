@@ -120,6 +120,15 @@ async def test_split_service_call_data(input_data, expected_data_list):
         (
             {
                 ATTR_ENTITY_ID: "light.test",
+                ATTR_COLOR_TEMP_KELVIN: 5500,
+                ATTR_TRANSITION: 2,
+            },
+            State("light.test", STATE_ON, {ATTR_COLOR_TEMP_KELVIN: 5524}),
+            {ATTR_ENTITY_ID: "light.test", ATTR_TRANSITION: 2},
+        ),
+        (
+            {
+                ATTR_ENTITY_ID: "light.test",
                 ATTR_COLOR_TEMP_KELVIN: 6500,
                 ATTR_TRANSITION: 2,
             },
@@ -132,7 +141,7 @@ async def test_split_service_call_data(input_data, expected_data_list):
                 ATTR_COLOR_TEMP_KELVIN: 5500,
                 ATTR_TRANSITION: 2,
             },
-            State("light.test", STATE_ON, {ATTR_COLOR_TEMP_KELVIN: 5470}),
+            State("light.test", STATE_ON, {ATTR_COLOR_TEMP_KELVIN: 5400}),
             {
                 ATTR_ENTITY_ID: "light.test",
                 ATTR_COLOR_TEMP_KELVIN: 5500,
@@ -156,9 +165,10 @@ async def test_split_service_call_data(input_data, expected_data_list):
         "keep attributes whose values differ from the state",
         "remove brightness within quantization tolerance (0-99 device scale)",
         "keep brightness outside quantization tolerance",
-        "remove color temp that maps to the same mired value (5500 K)",
-        "remove color temp that maps to the same mired value (6500 K)",
-        "keep color temp that maps to a different mired value",
+        "remove color temp within one mired (round-converting integration)",
+        "remove color temp within one mired (floor-converting HA core helpers)",
+        "remove color temp within one mired (6500 K)",
+        "keep color temp more than one mired away",
         "remove non-numeric attributes on exact equality",
         "keep attribute when state value is None",
     ],
